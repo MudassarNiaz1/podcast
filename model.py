@@ -1,16 +1,15 @@
-def generate_podcast(text):
-    import ast, re, os, nest_asyncio, asyncio, shutil
-    from gtts import gTTS
-    import edge_tts
-    import ffmpeg
-    from openai import OpenAI
-    from langchain_google_genai import ChatGoogleGenerativeAI
-    from langchain.schema import (
+
+import ast, re, os, nest_asyncio, asyncio, shutil
+from gtts import gTTS
+import edge_tts
+import ffmpeg
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.schema import (
         SystemMessage,
         HumanMessage,
     )
-    from dotenv import load_dotenv
-
+from dotenv import load_dotenv
+def generate_podcast(text):
     # Load environment variables and check for OPENAI_API_KEY
     load_dotenv()
     os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
