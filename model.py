@@ -4,21 +4,21 @@ def generate_podcast(text):
     import edge_tts
     import ffmpeg
     from openai import OpenAI
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain.schema import (
+        SystemMessage,
+        HumanMessage,
+    )
     from dotenv import load_dotenv
 
     # Load environment variables and check for OPENAI_API_KEY
     load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY not found in environment variables. Please add it to your .env file.")
-
+    os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
+    
     nest_asyncio.apply()
 
     # Initialize OpenAI (OpenRouter) client
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-    )
+    client = ChatGoogleGenerativeAI(model="gemini-2.0-flash-001")
 
     # Prompt for dialogue generation
     SYSTEM_PROMPT = """
@@ -46,15 +46,14 @@ def generate_podcast(text):
 
     # Generate the podcast script from the cleaned text
     try:
-        completion = client.chat.completions.create(
-            extra_body={},
-            model="meta-llama/llama-4-maverick:free",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": text}
+
+        response = client.invoke(
+            [
+                SystemMessage(content=SYSTEM_PROMPT),
+                HumanMessage(content=text)
             ]
         )
-        raw_output = completion.choices[0].message.content.strip()
+        raw_output = response.content.strip()
     except Exception as e:
         raise ValueError(f"Error during OpenAI API call: {str(e)}")
 
