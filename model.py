@@ -79,22 +79,35 @@ def generate_podcast(text):
     os.makedirs("audio", exist_ok=True)
     speaker_1_lines = [line for speaker, line in dialogue if speaker == "Speaker 1"]
     speaker_2_lines = [line for speaker, line in dialogue if speaker == "Speaker 2"]
-    segment_list = []
 
     # Async voice generator for Speaker 2
     async def generate_edge_voice(text, filename, voice="en-GB-RyanNeural"):
         communicate = edge_tts.Communicate(text, voice=voice)
         await communicate.save(filename)
 
-    # Generate audio clips
     num_lines = min(len(speaker_1_lines), len(speaker_2_lines))
+
+    # Generate Speaker 1 audio clips synchronously (gTTS)
     for i in range(num_lines):
         speaker1_path = f"audio/speaker1_{i}.mp3"
         gTTS(speaker_1_lines[i], lang='en', tld='com').save(speaker1_path)
 
-        speaker2_path = f"audio/speaker2_{i}.mp3"
-        asyncio.run(generate_edge_voice(speaker_2_lines[i], speaker2_path))
+    # Async function to generate all Speaker 2 voices in parallel
+    async def generate_all_voices():
+        tasks = []
+        for i in range(num_lines):
+            speaker2_path = f"audio/speaker2_{i}.mp3"
+            tasks.append(generate_edge_voice(speaker_2_lines[i], speaker2_path))
+        await asyncio.gather(*tasks)
 
+    # Run the async generation once
+    asyncio.run(generate_all_voices())
+
+    # After generating all audio files, create segment list for concatenation
+    segment_list = []
+    for i in range(num_lines):
+        speaker1_path = f"audio/speaker1_{i}.mp3"
+        speaker2_path = f"audio/speaker2_{i}.mp3"
         segment_list.extend([
             f"file '{os.path.abspath(speaker1_path)}'",
             f"file '{os.path.abspath(speaker2_path)}'"
