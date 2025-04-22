@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Podcast Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>🎙️ AI Podcast Generator</h1>
+    <p>Upload your PDF and get a dialogue-style audio podcast!</p>
+
+    <!-- PDF Upload Form -->
+    <form action="{{ url_for('upload_pdf') }}" method="POST" enctype="multipart/form-data">
+      <label for="pdf_file">Choose PDF File:</label>
+      <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" required>
+      <button type="submit">Generate Podcast</button>
+    </form>
+
+    <!-- Displaying the Podcast Audio -->
+    <div class="output-section">
+      {% if audio_file %}
+        <h2>🎧 Your Podcast</h2>
+        <audio controls autoplay id="audio-player">
+          <source src="{{ url_for('static', filename=audio_file) }}" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      {% elif error %}
+        <p style="color: red;">Error: {{ error }}</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
